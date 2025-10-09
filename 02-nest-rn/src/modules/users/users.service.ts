@@ -42,13 +42,24 @@ export class UsersService {
   }
 
   async findAll(query: string, current: number, pageSize: number) {
-    const { filter, limit, skip, sort } = aqp(query);
+    const { filter, sort } = aqp(query);
+
+    if (filter.current) delete filter.current;
+    if (filter.pageSize) delete filter.pageSize;
+
+    if (!current) current = 1;
+    if (!pageSize) pageSize = 10;
+
+    const totalItems = (await this.userModel.find(filter)).length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    const skip = (+current - 1) * (+pageSize);
     const results = await this.userModel
       .find(filter)
-      .limit(limit)
+      .limit(pageSize)
       .skip(skip)
+      .select("-password")
       .sort(sort as any);
-    return results;
+    return { results, totalPages };
   }
 
   findOne(id: number) {
