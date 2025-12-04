@@ -5,7 +5,7 @@ Template này được sử dụng cho video fullstack Next.js/Nest.js của tá
 https://nodejs.org/download/release/v20.14.0/
 
 ## Về tác giả
-Mọi thông tin về Tác giả Hỏi Dân IT, các bạn có thể tìm kiếm tại đây:
+Mọi thông tin về Tác giả Trần Khải, các bạn có thể tìm kiếm tại đây:
 
 Website chính thức: https://github.com/TranKhai1122004
 
