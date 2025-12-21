@@ -7,15 +7,18 @@ import { Model } from 'mongoose';
 import { hashPasswordHelper } from '@/helpers/util';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
-import { CreateAuthDto } from '@/auth/dto/create-auth.dto';
+import { CodeAuthDto, CreateAuthDto } from '@/auth/dto/create-auth.dto';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
+import { MailerService } from '@nestjs-modules/mailer';
+import { ppid } from 'process';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name)
-    private userModel: Model<User>
+    private userModel: Model<User>,
+    private readonly mailerService: MailerService
 
   ) { }
 
@@ -90,7 +93,6 @@ export class UsersService {
 
   async handleRegister(registerDto: CreateAuthDto) {
     const { name, email, password } = registerDto;
-
     //check email
     const isExist = await this.isEmailExist(email);
     if (isExist === true) {
@@ -98,18 +100,53 @@ export class UsersService {
     }
 
     //hash password
-    const hashPassword = await hashPasswordHelper(password)
+    const hashPassword = await hashPasswordHelper(password);
+    const codeId = uuidv4();
     const user = await this.userModel.create({
       name, email, password: hashPassword,
       isActive: false,
-      codeId: uuidv4(),
-      codeExpired: dayjs().add(1, 'minutes')
+      codeId: codeId,
+      codeExpired: dayjs().add(5, 'minutes')
+
     })
 
+    //send email
+    this.mailerService.sendMail({
+      to: user.email, // list of receivers
+      subject: 'Activate your account at @TrKhai', // Subject line
+      template: "register", //file name
+      context: {
+        name: user?.name ?? user.email,
+        activationCode: codeId
+      }
+    })
     //give feedback
     return {
       _id: user._id
     }
-    //send email
+
+  }
+
+  async handleActive(data: CodeAuthDto) {
+    const user = await this.userModel.findOne({
+      _id: data._id,
+      codeId: data.code
+    })
+    if (!user) {
+      throw new BadRequestException("The verification code is invalid or has expired.")
+    }
+
+    //check expire code
+    const isBeforeCheck = dayjs().isBefore(user.codeExpired);// return boolean
+    if (isBeforeCheck) {
+      //valid
+      await this.userModel.updateOne({ _id: data._id }, {
+        isActive: true
+      })
+      return { isBeforeCheck };
+    } else {
+      throw new BadRequestException("The verification code is invalid or has expired.")
+    }
+
   }
 }

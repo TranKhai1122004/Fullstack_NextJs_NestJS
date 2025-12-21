@@ -1,11 +1,11 @@
 # Nest.js template
-Template này được sử dụng cho video fullstack Next.js/Nest.js của tác giả Hỏi Dân IT (Eric)
+Template này được sử dụng cho video fullstack Next.js/Nest.js của tác giả TrKhai (Eric)
 
 ### Môi trường chạy dự án: Node.js v20.14.0
 https://nodejs.org/download/release/v20.14.0/
 
 ## Về tác giả
-Mọi thông tin về Tác giả Hỏi Dân IT, các bạn có thể tìm kiếm tại đây:
+Mọi thông tin về Tác giả TrKhai, các bạn có thể tìm kiếm tại đây:
 
 Website chính thức: https://github.com/TranKhai1122004
 

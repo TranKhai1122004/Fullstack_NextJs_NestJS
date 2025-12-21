@@ -2,8 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request }
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './passport/local-auth.guard';
 import { JwtAuthGuard } from './passport/jwt-auth.guard';
-import { Public } from '@/decorator/customize';
-import { CreateAuthDto } from './dto/create-auth.dto';
+import { Public, ResponseMessage } from '@/decorator/customize';
+import { CreateAuthDto, CodeAuthDto } from './dto/create-auth.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 
 
@@ -18,6 +18,7 @@ export class AuthController {
   @Post("login")
   @Public()
   @UseGuards(LocalAuthGuard)
+  @ResponseMessage("Fetch Login")
   handleLogin(@Request() req) {
     return this.authService.login(req.user);
   }
@@ -29,6 +30,12 @@ export class AuthController {
     return this.authService.handleRegister(registerDto);
   }
 
+  @Post('check-code')
+  @Public()
+  checkCode(@Body() data: CodeAuthDto) {
+    return this.authService.checkCode(data);
+  }
+
   @Get('mail')
   @Public()
   testMail() {
@@ -37,7 +44,12 @@ export class AuthController {
         to: 'trankhai1122004@gmail.com', // list of receivers
         subject: 'Testing Nest MailerModule ✔', // Subject line
         text: 'welcome', // plaintext body
-        html: '<b>Hello world with TrKhai</b>', // HTML body content
+        template: "register", //file name
+        context: {
+          name: "Khải",
+          activationCode: 123456789
+
+        }
       })
       .then(() => { })
       .catch(() => { });
