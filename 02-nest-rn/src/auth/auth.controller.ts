@@ -32,8 +32,14 @@ export class AuthController {
 
   @Post('check-code')
   @Public()
-  checkCode(@Body() data: CodeAuthDto) {
-    return this.authService.checkCode(data);
+  checkCode(@Body() registerDto: CodeAuthDto) {
+    return this.authService.checkCode(registerDto);
+  }
+
+  @Post('retry-active')
+  @Public()
+  retryActive(@Body("email") email: string) {
+    return this.authService.retryActive(email);
   }
 
   @Get('mail')
