@@ -2,10 +2,10 @@ import { IsNotEmpty, IsOptional } from "class-validator";
 
 export class CreateAuthDto {
 
-    @IsNotEmpty({ message: "Email does not exist" })
+    @IsNotEmpty({ message: "Email cannot be empty" })
     email: string;
 
-    @IsNotEmpty({ message: "Password does not exist" })
+    @IsNotEmpty({ message: "Password cannot be empty" })
     password: string;
 
     @IsOptional()
@@ -14,11 +14,28 @@ export class CreateAuthDto {
 
 export class CodeAuthDto {
 
-    @IsNotEmpty({ message: "Id does not exist" })
+    @IsNotEmpty({ message: "Id cannot be empty" })
     _id: string;
 
-    @IsNotEmpty({ message: "Verification code does not exist" })
+    @IsNotEmpty({ message: "Verification cannot be empty" })
     code: string;
+
+
+}
+
+export class ChangePasswordAuthDto {
+    @IsNotEmpty({ message: "Code cannot be empty" })
+    code: string;
+
+    @IsNotEmpty({ message: "Password cannot be empty" })
+    password: string;
+
+    @IsNotEmpty({ message: "Confirm Password cannot be empty" })
+    confirmPassword: string;
+
+    @IsNotEmpty({ message: "Email cannot be empty" })
+    email: string;
+
 
 
 }

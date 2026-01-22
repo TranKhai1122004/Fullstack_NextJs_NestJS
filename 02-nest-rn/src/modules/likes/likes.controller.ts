@@ -5,7 +5,7 @@ import { UpdateLikeDto } from './dto/update-like.dto';
 
 @Controller('likes')
 export class LikesController {
-  constructor(private readonly likesService: LikesService) {}
+  constructor(private readonly likesService: LikesService) { }
 
   @Post()
   create(@Body() createLikeDto: CreateLikeDto) {
