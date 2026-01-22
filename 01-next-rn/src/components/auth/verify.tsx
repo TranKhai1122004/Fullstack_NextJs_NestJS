@@ -6,14 +6,13 @@ import Link from 'next/link';
 import { sendRequest } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 
-
 const Verify = (props: any) => {
     const { id } = props;
-    const router = useRouter();
+
+    const router = useRouter()
 
     const onFinish = async (values: any) => {
         const { _id, code } = values;
-
         const res = await sendRequest<IBackendRes<any>>({
             url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/check-code`,
             method: "POST",
@@ -21,9 +20,8 @@ const Verify = (props: any) => {
                 _id, code
             }
         })
-        console.log("Check res: ", res);
         if (res?.data) {
-            message.success("Your account has been activated successfully!");
+            message.success("Kích hoạt tài khoản thành công.")
             router.push(`/auth/login`);
         } else {
             notification.error({
@@ -42,7 +40,7 @@ const Verify = (props: any) => {
                     border: "1px solid #ccc",
                     borderRadius: "5px"
                 }}>
-                    <legend>Activate Your Account</legend>
+                    <legend>Kích hoạt tài khoản</legend>
                     <Form
                         name="basic"
                         onFinish={onFinish}
@@ -54,23 +52,25 @@ const Verify = (props: any) => {
                             name="_id"
                             initialValue={id}
                             hidden
-
                         >
                             <Input disabled />
                         </Form.Item>
-                        <div>A verification code has been sent to the email address you registered.</div>
+                        <div>
+                            Mã code đã được gửi tới email đăng ký, vui lòng kiểm tra email.
+                        </div>
                         <Divider />
+
                         <Form.Item
-                            label="Verification Code"
+                            label="Code"
                             name="code"
                             rules={[
                                 {
                                     required: true,
-                                    message: 'Please input your verification code',
+                                    message: 'Please input your code!',
                                 },
                             ]}
                         >
-                            <Input.Password />
+                            <Input />
                         </Form.Item>
 
 
@@ -82,10 +82,10 @@ const Verify = (props: any) => {
                             </Button>
                         </Form.Item>
                     </Form>
-                    <Link href={"/"}><ArrowLeftOutlined />Back to the Home Page</Link>
+                    <Link href={"/"}><ArrowLeftOutlined /> Quay lại trang chủ</Link>
                     <Divider />
                     <div style={{ textAlign: "center" }}>
-                        Already have an account? <Link href={"/auth/login"}>Sign in</Link>
+                        Đã có tài khoản? <Link href={"/auth/login"}>Đăng nhập</Link>
                     </div>
 
                 </fieldset>
@@ -94,4 +94,5 @@ const Verify = (props: any) => {
 
     )
 }
+
 export default Verify;
