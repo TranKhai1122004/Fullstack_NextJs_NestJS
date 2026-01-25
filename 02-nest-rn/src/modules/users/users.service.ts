@@ -1,4 +1,7 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException, Injectable, ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -12,6 +15,9 @@ import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ppid } from 'process';
+import { ROLE } from '@/constants/role.enum';
+import * as bcrypt from 'bcrypt';
+
 
 @Injectable()
 export class UsersService {
@@ -29,20 +35,30 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto) {
-    const { name, email, password, phone, address, image } = createUserDto;
-    //check email
+    const { name, email, password, phone, address, image, role } = createUserDto;
+
+    // check email
     const isExist = await this.isEmailExist(email);
-    if (isExist === true) {
-      throw new BadRequestException(`Email: ${email} is exist. Please try another email`)
+    if (isExist) {
+      throw new BadRequestException(
+        `Email: ${email} is exist. Please try another email`
+      );
     }
-    //hash password
-    const hashPassword = await hashPasswordHelper(createUserDto.password)
+
+    // hash password
+    const hashPassword = await hashPasswordHelper(password);
+
     const user = await this.userModel.create({
-      name, email, password: hashPassword, phone, address, image
-    })
-    return {
-      _id: user._id
-    }
+      name,
+      email,
+      password: hashPassword,
+      phone,
+      address,
+      image,
+      role: role ?? ROLE.USERS, // 🔥 CHỐT Ở ĐÂY
+    });
+
+    return { _id: user._id };
   }
 
   async findAll(query: string, current: number, pageSize: number) {
@@ -74,8 +90,17 @@ export class UsersService {
     };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const user = await this.userModel
+      .findById(id)
+      .select('-password') // ❌ không trả password
+      .lean();
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    return user;
   }
 
   async findByEmail(email: string) {
@@ -87,6 +112,7 @@ export class UsersService {
       { ...updateUserDto }
     );
   }
+
 
   async remove(_id: string) {
     //check id
@@ -242,4 +268,6 @@ export class UsersService {
     }
 
   }
+
+
 }
