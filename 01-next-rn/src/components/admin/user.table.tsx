@@ -1,123 +1,167 @@
-'use client'
+'use client';
+
 import { handleDeleteUserAction } from "@/utils/actions";
 import { DeleteTwoTone, EditTwoTone } from "@ant-design/icons";
-import { Button, Popconfirm, Table } from "antd"
+import { Button, Popconfirm, Table, Typography } from "antd";
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from "react";
 import UserCreate from "./user.create";
 import UserUpdate from "./user.update";
 
+const { Title, Text } = Typography;
 
 interface IProps {
-    users: any;
+    users: any[];
     meta: {
         current: number;
         pageSize: number;
         pages: number;
         total: number;
-    }
+    };
+    role: 'ADMIN' | 'USER';
 }
+
 const UserTable = (props: IProps) => {
-    const { users, meta } = props;
+    const {
+        users,
+        meta = {
+            current: 1,
+            pageSize: 10,
+            total: 0,
+            pages: 0,
+        },
+        role,
+    } = props;
+
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const { replace } = useRouter();
 
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
-    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [dataUpdate, setDataUpdate] = useState<any>(null);
 
-    const columns = [
+    // =======================
+    // COLUMNS
+    // =======================
+    const columns: any[] = [
         {
-            title: "STT",
-            render: (_: any, record: any, index: any) => {
-                return (
-                    <>{(index + 1) + (meta.current - 1) * (meta.pageSize)}</>
-                )
-            }
+            title: <Text strong>STT</Text>,
+            width: 80,
+            align: 'center',
+            render: (_: any, __: any, index: number) =>
+                (index + 1) + (meta.current - 1) * meta.pageSize,
         },
         {
-            title: '_id',
-            dataIndex: '_id',
+            title: <Text strong>ID</Text>,
+            dataIndex: "_id",
+            render: (value: string) => (
+                <Text style={{ fontSize: 13 }}>{value}</Text>
+            ),
         },
         {
-            title: 'Email',
-            dataIndex: 'email',
+            title: <Text strong>Email</Text>,
+            dataIndex: "email",
+            render: (value: string) => (
+                <Text style={{ fontSize: 14 }}>{value}</Text>
+            ),
         },
         {
-            title: 'Actions',
+            title: <Text strong>Actions</Text>,
+            align: 'center',
+            render: (_: any, record: any) => (
+                <>
+                    <EditTwoTone
+                        twoToneColor="#fa8c16"
+                        style={{ cursor: "pointer", fontSize: 18, marginRight: 16 }}
+                        onClick={() => {
+                            setIsUpdateModalOpen(true);
+                            setDataUpdate(record);
+                        }}
+                    />
 
-            render: (text: any, record: any, index: any) => {
-                return (
-                    <>
-                        <EditTwoTone
-                            twoToneColor="#f57800" style={{ cursor: "pointer", margin: "0 20px" }}
-                            onClick={() => {
-                                setIsUpdateModalOpen(true);
-                                setDataUpdate(record);
-                            }}
+                    <Popconfirm
+                        placement="leftTop"
+                        title="Xác nhận xóa user"
+                        description="Bạn có chắc chắn muốn xóa user này?"
+                        onConfirm={async () =>
+                            await handleDeleteUserAction(record?._id)
+                        }
+                        okText="Xác nhận"
+                        cancelText="Hủy"
+                    >
+                        <DeleteTwoTone
+                            twoToneColor="#ff4d4f"
+                            style={{ cursor: "pointer", fontSize: 18 }}
                         />
-
-                        <Popconfirm
-                            placement="leftTop"
-                            title={"Xác nhận xóa user"}
-                            description={"Bạn có chắc chắn muốn xóa user này ?"}
-                            onConfirm={async () => await handleDeleteUserAction(record?._id)}
-                            okText="Xác nhận"
-                            cancelText="Hủy"
-                        >
-                            <span style={{ cursor: "pointer" }}>
-                                <DeleteTwoTone twoToneColor="#ff4d4f" />
-                            </span>
-                        </Popconfirm>
-                    </>
-                )
-            }
-        }
-
+                    </Popconfirm>
+                </>
+            ),
+        },
     ];
 
-    const onChange = (pagination: any, filters: any, sorter: any, extra: any) => {
-        if (pagination && pagination.current) {
+    // =======================
+    // PAGINATION
+    // =======================
+    const onChange = (pagination: any) => {
+        if (pagination?.current) {
             const params = new URLSearchParams(searchParams);
-            params.set('current', pagination.current);
+            params.set("current", pagination.current);
             replace(`${pathname}?${params.toString()}`);
         }
     };
 
-
     return (
         <>
-            <div style={{
-                display: "flex", justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 20
-            }}>
-                <span>Manager Users</span>
-                <Button onClick={() => setIsCreateModalOpen(true)}>Create User</Button>
+            {/* HEADER */}
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 20,
+                }}
+            >
+                <Title level={4} style={{ margin: 0 }}>
+                    User Management
+                </Title>
+
+                {role === 'ADMIN' && (
+                    <Button type="primary" onClick={() => setIsCreateModalOpen(true)}>
+                        Create User
+                    </Button>
+                )}
             </div>
+
+            {/* TABLE */}
             <Table
                 bordered
                 dataSource={users}
                 columns={columns}
-                rowKey={"_id"}
-                pagination={
-                    {
-                        current: meta.current,
-                        pageSize: meta.pageSize,
-                        showSizeChanger: true,
-                        total: meta.total,
-                        showTotal: (total, range) => { return (<div> {range[0]}-{range[1]} trên {total} rows</div>) }
-                    }
-                }
+                rowKey="_id"
+                pagination={{
+                    current: meta.current,
+                    pageSize: meta.pageSize,
+                    showSizeChanger: true,
+                    total: meta.total,
+                    showTotal: (total, range) => (
+                        <Text type="secondary">
+                            {range[0]}-{range[1]} trên {total} users
+                        </Text>
+                    ),
+                }}
                 onChange={onChange}
             />
 
-            <UserCreate
-                isCreateModalOpen={isCreateModalOpen}
-                setIsCreateModalOpen={setIsCreateModalOpen}
-            />
+            {/* ADMIN CREATE */}
+            {role === 'ADMIN' && (
+                <UserCreate
+                    isCreateModalOpen={isCreateModalOpen}
+                    setIsCreateModalOpen={setIsCreateModalOpen}
+                />
+            )}
 
+            {/* UPDATE (ADMIN + USER) */}
             <UserUpdate
                 isUpdateModalOpen={isUpdateModalOpen}
                 setIsUpdateModalOpen={setIsUpdateModalOpen}
@@ -125,7 +169,7 @@ const UserTable = (props: IProps) => {
                 setDataUpdate={setDataUpdate}
             />
         </>
-    )
-}
+    );
+};
 
 export default UserTable;

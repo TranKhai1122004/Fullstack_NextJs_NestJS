@@ -2,7 +2,7 @@
 import { handleCreateUserAction } from '@/utils/actions';
 import {
     Modal, Input, Form, Row, Col, message,
-    notification
+    notification, Select
 } from 'antd';
 
 interface IProps {
@@ -11,31 +11,27 @@ interface IProps {
 }
 
 const UserCreate = (props: IProps) => {
-
-    const {
-        isCreateModalOpen, setIsCreateModalOpen
-    } = props;
-
+    const { isCreateModalOpen, setIsCreateModalOpen } = props;
     const [form] = Form.useForm();
 
     const handleCloseCreateModal = () => {
-        form.resetFields()
+        form.resetFields();
         setIsCreateModalOpen(false);
-
-    }
+    };
 
     const onFinish = async (values: any) => {
+        // values = { email, password, name, role }
         const res = await handleCreateUserAction(values);
+
         if (res?.data) {
             handleCloseCreateModal();
-            message.success("Create succeed!")
+            message.success("Create succeed!");
         } else {
             notification.error({
                 message: "Create User error",
-                description: res?.message
-            })
+                description: res?.message,
+            });
         }
-
     };
 
     return (
@@ -43,25 +39,28 @@ const UserCreate = (props: IProps) => {
             title="Add new user"
             open={isCreateModalOpen}
             onOk={() => form.submit()}
-            onCancel={() => handleCloseCreateModal()}
+            onCancel={handleCloseCreateModal}
             maskClosable={false}
         >
             <Form
-                name="basic"
-                onFinish={onFinish}
                 layout="vertical"
                 form={form}
+                onFinish={onFinish}
+                initialValues={{
+                    role: "USER", // ✅ mặc định
+                }}
             >
                 <Row gutter={[15, 15]}>
-                    <Col span={24} >
+                    <Col span={24}>
                         <Form.Item
                             label="Email"
                             name="email"
                             rules={[{ required: true, message: 'Please input your email!' }]}
                         >
-                            <Input type='email' />
+                            <Input type="email" />
                         </Form.Item>
                     </Col>
+
                     <Col span={24}>
                         <Form.Item
                             label="Password"
@@ -71,7 +70,8 @@ const UserCreate = (props: IProps) => {
                             <Input.Password />
                         </Form.Item>
                     </Col>
-                    <Col span={24} >
+
+                    <Col span={24}>
                         <Form.Item
                             label="Name"
                             name="name"
@@ -81,10 +81,24 @@ const UserCreate = (props: IProps) => {
                         </Form.Item>
                     </Col>
 
+                    {/* 🔥 ROLE – CHỈ ADMIN */}
+                    <Col span={24}>
+                        <Form.Item
+                            label="Role"
+                            name="role"
+                            rules={[{ required: true }]}
+                        >
+                            <Select>
+                                <Select.Option value="USER">User</Select.Option>
+                                <Select.Option value="ADMIN">Admin</Select.Option>
+                            </Select>
+                        </Form.Item>
+                    </Col>
+
                 </Row>
             </Form>
         </Modal>
-    )
-}
+    );
+};
 
 export default UserCreate;

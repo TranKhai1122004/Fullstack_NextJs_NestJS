@@ -30,8 +30,9 @@ const ManageUserPage = async (props: IProps) => {
     return (
         <div>
             <UserTable
-                users={res?.data?.results ?? []}
+                users={res?.data?.users ?? []}
                 meta={res?.data?.meta}
+                role={session?.user?.role as 'ADMIN' | 'USER'}
             />
         </div>
     )

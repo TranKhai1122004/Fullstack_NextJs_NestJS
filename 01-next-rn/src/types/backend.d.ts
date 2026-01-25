@@ -32,7 +32,8 @@ declare global {
         user: {
             _id: string,
             name: string,
-            email: string
+            email: string,
+            role: string
         },
         access_token: string
     }
